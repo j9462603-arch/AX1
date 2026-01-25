@@ -1,151 +1,82 @@
--- AS1 🔥 SIMPLE & STABLE
-
+-- AX Fly ✈️
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
+local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
-local humanoid = char:WaitForChild("Humanoid")
 local hrp = char:WaitForChild("HumanoidRootPart")
 
-local homeCF
-
--- حماية (ما تموت)
-humanoid.MaxHealth = math.huge
-humanoid.Health = humanoid.MaxHealth
-humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-	humanoid.Health = humanoid.MaxHealth
-end)
+local flying = false
+local speed = 60
+local up, down = false, false
 
 -- GUI
 local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.ResetOnSpawn = false
+gui.Name = "AXFlyGUI"
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,220,0,240)
-frame.Position = UDim2.new(0.7,0,0.25,0)
-frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-frame.Active = true
-frame.Draggable = true
+frame.Size = UDim2.new(0,320,0,110)
+frame.Position = UDim2.new(0.5,-160,0.75,0)
+frame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+frame.BorderSizePixel = 0
 
-local function btn(txt, y, cb)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+
+local function makeBtn(txt, pos, size, color)
 	local b = Instance.new("TextButton", frame)
-	b.Size = UDim2.new(0.9,0,0,40)
-	b.Position = UDim2.new(0.05,0,y,0)
 	b.Text = txt
+	b.Position = pos
+	b.Size = size
+	b.BackgroundColor3 = color
 	b.TextScaled = true
-	b.BackgroundColor3 = Color3.fromRGB(70,70,70)
-	b.TextColor3 = Color3.new(1,1,1)
-	b.MouseButton1Click:Connect(cb)
+	b.TextColor3 = Color3.new(0,0,0)
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
+	return b
 end
 
--- حفظ البيت
-btn("🏠 حفظ البيت", 10, function()
-	homeCF = hrp.CFrame
+local upBtn   = makeBtn("UP",   UDim2.new(0,10,0,10),   UDim2.new(0,60,0,40), Color3.fromRGB(120,255,120))
+local downBtn = makeBtn("DOWN", UDim2.new(0,10,0,55),   UDim2.new(0,60,0,40), Color3.fromRGB(255,255,120))
+
+local plusBtn  = makeBtn("+", UDim2.new(0,80,0,10), UDim2.new(0,50,0,40), Color3.fromRGB(200,200,255))
+local minusBtn = makeBtn("-", UDim2.new(0,80,0,55), UDim2.new(0,50,0,40), Color3.fromRGB(200,255,255))
+
+local speedLbl = makeBtn("60", UDim2.new(0,140,0,10), UDim2.new(0,60,0,85), Color3.fromRGB(255,160,80))
+speedLbl.Active = false
+
+local flyBtn = makeBtn("FLY", UDim2.new(0,210,0,10), UDim2.new(0,100,0,85), Color3.fromRGB(255,220,120))
+
+-- Buttons logic
+upBtn.MouseButton1Down:Connect(function() up = true end)
+upBtn.MouseButton1Up:Connect(function() up = false end)
+
+downBtn.MouseButton1Down:Connect(function() down = true end)
+downBtn.MouseButton1Up:Connect(function() down = false end)
+
+plusBtn.MouseButton1Click:Connect(function()
+	speed += 10
+	speedLbl.Text = speed
 end)
 
--- رجوع البيت
-btn("⚡ رجوع البيت", 60, function()
-	if homeCF then
-		hrp.CFrame = homeCF + Vector3.new(0,3,0)
-	end
+minusBtn.MouseButton1Click:Connect(function()
+	speed = math.max(10, speed - 10)
+	speedLbl.Text = speed
 end)
 
--- نط عالي
-btn("🦘 نط كنغر", 110, function()
-	humanoid.JumpPower = 120
-	humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+flyBtn.MouseButton1Click:Connect(function()
+	flying = not flying
+	flyBtn.Text = flying and "STOP" or "FLY"
 end)
 
--- ضرب عن بعد
-btn("👊 ضرب", 160, function()
-	local sword = player.Backpack:FindFirstChild("Rainbowrath Sword")
-		or char:FindFirstChild("Rainbowrath Sword")
-	if not sword then return end
+-- Fly movement
+RunService.RenderStepped:Connect(function()
+	if not flying then return end
 
-	for _,plr in ipairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-			local save = hrp.CFrame
-			hrp.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
-			humanoid:EquipTool(sword)
-			task.wait(0.05)
-			pcall(function() sword:Activate() end)
-			task.wait(0.1)
-			hrp.CFrame = save
-		end
-	end
-end)-- AS1 🔥 SIMPLE & STABLE
+	local move = hrp.CFrame.LookVector * speed
+	local y = 0
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+	if up then y = speed end
+	if down then y = -speed end
 
-local char = player.Character or player.CharacterAdded:Wait()
-local humanoid = char:WaitForChild("Humanoid")
-local hrp = char:WaitForChild("HumanoidRootPart")
-
-local homeCF
-
--- حماية (ما تموت)
-humanoid.MaxHealth = math.huge
-humanoid.Health = humanoid.MaxHealth
-humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-	humanoid.Health = humanoid.MaxHealth
-end)
-
--- GUI
-local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.ResetOnSpawn = false
-
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,220,0,240)
-frame.Position = UDim2.new(0.7,0,0.25,0)
-frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-frame.Active = true
-frame.Draggable = true
-
-local function btn(txt, y, cb)
-	local b = Instance.new("TextButton", frame)
-	b.Size = UDim2.new(0.9,0,0,40)
-	b.Position = UDim2.new(0.05,0,y,0)
-	b.Text = txt
-	b.TextScaled = true
-	b.BackgroundColor3 = Color3.fromRGB(70,70,70)
-	b.TextColor3 = Color3.new(1,1,1)
-	b.MouseButton1Click:Connect(cb)
-end
-
--- حفظ البيت
-btn("🏠 حفظ البيت", 10, function()
-	homeCF = hrp.CFrame
-end)
-
--- رجوع البيت
-btn("⚡ رجوع البيت", 60, function()
-	if homeCF then
-		hrp.CFrame = homeCF + Vector3.new(0,3,0)
-	end
-end)
-
--- نط عالي
-btn("🦘 نط كنغر", 110, function()
-	humanoid.JumpPower = 120
-	humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-end)
-
--- ضرب عن بعد
-btn("👊 ضرب", 160, function()
-	local sword = player.Backpack:FindFirstChild("Rainbowrath Sword")
-		or char:FindFirstChild("Rainbowrath Sword")
-	if not sword then return end
-
-	for _,plr in ipairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-			local save = hrp.CFrame
-			hrp.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
-			humanoid:EquipTool(sword)
-			task.wait(0.05)
-			pcall(function() sword:Activate() end)
-			task.wait(0.1)
-			hrp.CFrame = save
-		end
-	end
+	hrp.Velocity = Vector3.new(move.X, y, move.Z)
 end)
